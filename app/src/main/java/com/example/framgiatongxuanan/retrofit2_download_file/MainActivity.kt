@@ -6,7 +6,13 @@ import android.os.Bundle
 import android.util.Log
 import com.example.framgiatongxuanan.viblokolin.features.androidversion.Repository
 import okhttp3.ResponseBody
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.io.*
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -16,9 +22,44 @@ class MainActivity : AppCompatActivity() {
 
 
     }
- fun downloadFile(){
-     Repository.createService(ApiService::javaClass).downloadFileWithFixedUrl
- }
+
+    fun downloadFile() {
+        val retrofit = Retrofit.Builder()
+                .baseUrl(Constants.BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build()
+
+        val service = retrofit.create(ApiService::class.java!!)
+
+        val call = service.downloadFileWithFixedUrl()
+
+        call.enqueue(object : Callback<ResponseBody> {
+            override fun onFailure(call: Call<ResponseBody>?, t: Throwable?) {
+                Log.d("onFailure", t.toString())
+            }
+
+            override fun onResponse(call: Call<ResponseBody>?, response: Response<ResponseBody>?) {
+                try {
+
+                    Log.d("onResponse", "Response came from server")
+
+                    val FileDownloaded = writeResponseBodyToDisk(response?.body()?:null)
+
+                    Log.d("onResponse", "Image is downloaded and saved ? $FileDownloaded")
+
+                } catch (e: Exception) {
+                    Log.d("onResponse", "There is an error")
+                    e.printStackTrace()
+                }
+            }
+
+
+            fun onFailure(t: Throwable) {
+                Log.d("onFailure", t.toString())
+            }
+        })
+
+    }
 
     private fun writeResponseBodyToDisk(body: ResponseBody, fileName: String): Boolean {
         try {
