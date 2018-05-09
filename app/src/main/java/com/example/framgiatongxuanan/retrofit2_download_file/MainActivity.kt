@@ -25,22 +25,21 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         downloadFile()
         btnDownLoad.setOnClickListener {
-            if (isStoragePermissionGranted()) {
+            if (isStoragePermissionGranted())
                 downloadFile()
-            } else {
-                downloadFile()
-            }
         }
+
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            downloadFile()
+
         }
     }
 
     fun downloadFile() {
+        Log.d("downloadFile", "start")
         val retrofit = Retrofit.Builder()
                 .baseUrl(Constants.BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
@@ -57,8 +56,9 @@ class MainActivity : AppCompatActivity() {
                     if (response?.isSuccessful == true) {
                         val execute = object : AsyncTask<Void, Void, Void>() {
                             override fun doInBackground(vararg voids: Void): Void? {
-                                val writtenToDisk = writeResponseBodyToDisk(response.body(), "retrofit-2.0.0-beta2-javadoc")
+                                val writtenToDisk = writeResponseBodyToDisk(response.body(), "retrofit-2.0.0-beta2-javadoc.jar")
                                 Log.d("download", "file download was a success? $writtenToDisk")
+                                Log.d("downloadFile", "sucess")
                                 return null
                             }
                         }.execute()
@@ -66,7 +66,7 @@ class MainActivity : AppCompatActivity() {
 
                     Log.d("onResponse", "Response came from server")
 
-                } catch (e: Exception) {
+                } catch (e: IOException) {
                     Log.d("onResponse", "There is an error")
                     e.printStackTrace()
                 }
